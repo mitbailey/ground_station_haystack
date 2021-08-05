@@ -21,18 +21,18 @@ int main(int argc, char **argv)
 
     // Set up global data.
     global_data_t global_data[1] = {0};
-    network_data_init(global_data->network_data);
+    network_data_init(global_data->network_data, SERVER_PORT);
     global_data->network_data->rx_active = true;
 
     // 1 = All good, 0 = recoverable failure, -1 = fatal failure (close program)
-    global_data->thread_status = 1;
+    global_data->network_data->thread_status = 1;
 
     // Create Ground Station Network thread IDs.
     pthread_t net_polling_tid, net_rx_tid, xband_rx_tid;
 
     // Start the RX threads, and restart them should it be necessary.
     // Only gets-out if a thread declares an unrecoverable emergency and sets its status to -1.
-    while (global_data->thread_status > -1)
+    while (global_data->network_data->thread_status > -1)
     {
         // Initialize and begin socket communication to the server.
         if (!global_data->network_data->connection_ready)
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
             // TODO: Check if this is the desired functionality.
             // Currently, the program will not proceed past this point if it cannot connect to the server.
             // TODO: This probably means that losing connection to the server is a recoverable error (threads should set their statuses to 0).
-            while (gs_connect_to_server(global_data) != 1)
+            while (gs_connect_to_server(global_data->network_data) != 1)
             {
                 dbprintlf(RED_FG "Failed to establish connection to server.");
                 usleep(5 SEC);
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         }
 
         // Start the threads.
-        pthread_create(&net_polling_tid, NULL, gs_polling_thread, global_data);
+        pthread_create(&net_polling_tid, NULL, gs_polling_thread, global_data->network_data);
         pthread_create(&net_rx_tid, NULL, gs_network_rx_thread, global_data);
         pthread_create(&xband_rx_tid, NULL, gs_xband_rx_thread, global_data);
 
@@ -81,5 +81,5 @@ int main(int argc, char **argv)
     // Destroy other things.
     close(global_data->network_data->socket);
 
-    return global_data->thread_status;
+    return global_data->network_data->thread_status;
 }

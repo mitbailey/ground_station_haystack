@@ -20,6 +20,7 @@
 #define SERVER_POLL_RATE 5 // Once per this many seconds
 #define SEC *1000000
 #define RECV_TIMEOUT 15
+#define SERVER_PORT 54230
 
 enum XBAND_STATUS
 {
@@ -30,7 +31,6 @@ enum XBAND_STATUS
 
 typedef struct
 {
-    int thread_status;
     rxmodem rx_modem[1];
     network_data_t network_data[1];
     XBAND_STATUS rx_status; // 0 = not initd nor armed, 1 = initd but not armed, 2 = ready

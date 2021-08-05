@@ -1,3 +1,6 @@
 [submodule "modem"]
 	path = modem
 	url = git@github.com:SPACE-HAUC/modem
+[submodule "network"]
+	path = network
+	url = git@github.com:mitbailey/network
