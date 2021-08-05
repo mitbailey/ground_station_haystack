@@ -1,0 +1,3 @@
+[submodule "modem"]
+	path = modem
+	url = git@github.com:SPACE-HAUC/modem
