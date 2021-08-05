@@ -15,13 +15,13 @@
 #include "meb_debug.hpp"
 #include "gs_haystack.hpp"
 
-NetworkData::NetworkData()
+void network_data_init(network_data_t *network_data)
 {
-    connection_ready = false;
-    socket = -1;
-    serv_ip->sin_family = AF_INET;
-    serv_ip->sin_port = htons(SERVER_PORT);
-    strcpy(discon_reason, "N/A");
+    network_data->connection_ready = false;
+    network_data->socket = -1;
+    network_data->serv_ip->sin_family = AF_INET;
+    network_data->serv_ip->sin_port = htons(SERVER_PORT);
+    strcpy(network_data->discon_reason, "N/A");   
 }
 
 NetworkFrame::NetworkFrame(NETWORK_FRAME_TYPE type, int payload_size)
@@ -150,7 +150,7 @@ void NetworkFrame::print()
     printf("Termination ----- 0x%04x\n", termination);
 }
 
-ssize_t NetworkFrame::sendFrame(NetworkData *network_data)
+ssize_t NetworkFrame::sendFrame(network_data_t *network_data)
 {
     if (!(network_data->connection_ready))
     {

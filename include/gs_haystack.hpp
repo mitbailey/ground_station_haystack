@@ -32,7 +32,7 @@ typedef struct
 {
     int thread_status;
     rxmodem rx_modem[1];
-    NetworkData *network_data;
+    network_data_t network_data[1];
     XBAND_STATUS rx_status; // 0 = not initd nor armed, 1 = initd but not armed, 2 = ready
     uint8_t netstat;
 } global_data_t;
@@ -82,7 +82,7 @@ void *gs_polling_thread(void *args);
  * @param data_size 
  * @return int 
  */
-int gs_network_transmit(NetworkData *network_data, NETWORK_FRAME_TYPE type, NETWORK_FRAME_ENDPOINT endpoint, void *data, int data_size);
+int gs_network_transmit(network_data_t *network_data, NETWORK_FRAME_TYPE type, NETWORK_FRAME_ENDPOINT endpoint, void *data, int data_size);
 
 /**
  * @brief 

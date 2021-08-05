@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
     // Set up global data.
     global_data_t global_data[1] = {0};
-    global_data->network_data = new NetworkData();
+    network_data_init(global_data->network_data);
     global_data->network_data->rx_active = true;
 
     // 1 = All good, 0 = recoverable failure, -1 = fatal failure (close program)
@@ -80,7 +80,6 @@ int main(int argc, char **argv)
 
     // Destroy other things.
     close(global_data->network_data->socket);
-    delete (global_data->network_data);
 
     return global_data->thread_status;
 }
