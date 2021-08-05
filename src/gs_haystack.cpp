@@ -62,7 +62,6 @@ void *gs_xband_rx_thread(void *args)
             continue;
         }
 
-        // gs_network_tx(global_data, buffer, buffer_size);
         gs_network_transmit(global_data->network_data, CS_TYPE_DATA, CS_ENDPOINT_CLIENT, buffer, buffer_size);
 
         free(buffer);

@@ -39,7 +39,7 @@ int main(int argc, char **argv)
         {
             // TODO: Check if this is the desired functionality.
             // Currently, the program will not proceed past this point if it cannot connect to the server.
-            // TODO: This probably means that losing connection to the server is a recoverable error (threads should set their statuses to 0).
+            // NOTE: Loss of connection to server is regained via gs_polling_thread's constant connection_ready check.
             while (gs_connect_to_server(global_data->network_data) != 1)
             {
                 dbprintlf(RED_FG "Failed to establish connection to server.");
