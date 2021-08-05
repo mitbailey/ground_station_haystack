@@ -38,6 +38,28 @@ typedef struct
 } global_data_t;
 
 /**
+ * @brief X-Band data structure.
+ * 
+ * From line 113 of https://github.com/SPACE-HAUC/shflight/blob/flight_test/src/cmd_parser.c
+ * Used for:
+ *  XBAND_SET_TX
+ *  XBAND_SET_RX
+ * 
+ * Also, what the GUI Client sends to Roof X-Band / Haystack for configurations.
+ * 
+ */
+typedef struct __attribute__((packed))
+{
+    float LO;
+    float bw;
+    uint16_t samp;
+    uint8_t phy_gain;
+    uint8_t adar_gain;
+    uint8_t ftr;
+    short phase[16];
+} xband_set_data_t;
+
+/**
  * @brief Listens for X-Band packets from SPACE-HAUC.
  * 
  * @param args 

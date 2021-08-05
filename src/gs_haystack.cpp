@@ -22,16 +22,12 @@ void *gs_xband_rx_thread(void *args)
 {
     global_data_t *global_data = (global_data_t *)args;
 
-    // Initialize (rx/tx)modem IDs.
-    int rxmodem_id = 0;
-    int rxdma_id = 0;
-
     while (global_data->network_data->thread_status > 0)
     {
         // Init RX if not already.
         if (global_data->rx_status == XSTAT_NOT_READY)
         {
-            if (rxmodem_init(global_data->rx_modem, rxmodem_id, rxdma_id) > 0)
+            if (rxmodem_init(global_data->rx_modem, uio_get_id("rx_ipcore"), uio_get_id("rx_dma")) > 0)
             {
                 global_data->rx_status = XSTAT_INITD;
             }
@@ -164,8 +160,17 @@ void *gs_network_rx_thread(void *args)
                 }
                 case CS_TYPE_CONFIG_XBAND:
                 {
-                    dbprintlf(BLUE_FG "Received an XBAND CONFIG frame!");
-                    // TODO: Config the radio.
+                    dbprintlf(BLUE_FG "Received an X-Band CONFIG frame!");
+                    if (network_frame->getEndpoint() == CS_ENDPOINT_HAYSTACK)
+                    {
+                        xband_set_data_t *config = (xband_set_data_t *)payload;
+                        // adradio_set_tx_lo(global_data->tx_modem, config->LO);
+                        // TODO: Figure out how to configure the X-Band radio.
+                    }
+                    else
+                    {
+                        dbprintlf("Received a configuration for Roof X-Band!");
+                    }
                     break;
                 }
                 case CS_TYPE_DATA:
