@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <si446x.h>
 #include "gs_haystack.hpp"
 #include "meb_debug.hpp"
 
@@ -31,6 +32,7 @@ void *gs_xband_rx_thread(void *args)
             {
                 global_data->rx_status = XSTAT_INITD;
             }
+
         }
 
         // Arm RX if not already.
