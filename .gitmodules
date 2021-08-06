@@ -4,3 +4,12 @@
 [submodule "network"]
 	path = network
 	url = git@github.com:mitbailey/network
+[submodule "adf4355"]
+	path = adf4355
+	url = git@github.com:SPACE-HAUC/adf4355
+[submodule "spibus"]
+	path = spibus
+	url = git@github.com:SPACE-HAUC/spibus
+[submodule "gpiodev"]
+	path = gpiodev
+	url = git@github.com:SPACE-HAUC/gpiodev
