@@ -32,7 +32,6 @@ void *gs_xband_rx_thread(void *args)
             {
                 global_data->rx_status = XSTAT_INITD;
             }
-
         }
 
         // Arm RX if not already.
@@ -164,9 +163,13 @@ void *gs_network_rx_thread(void *args)
                     dbprintlf(BLUE_FG "Received an X-Band CONFIG frame!");
                     if (network_frame->getEndpoint() == CS_ENDPOINT_HAYSTACK)
                     {
-                        xband_set_data_t *config = (xband_set_data_t *)payload;
+                        // xband_set_data_t *config = (xband_set_data_t *)payload;
                         // adradio_set_tx_lo(global_data->tx_modem, config->LO);
+                        phy_config_t *config = (phy_config_t *)payload;
                         // TODO: Figure out how to configure the X-Band radio.
+                        adradio_set_ensm_mode(global_data->radio, (ensm_mode)config->mode);
+                        // set freq???
+                        
                     }
                     else
                     {

@@ -16,6 +16,7 @@
 #include "rxmodem.h"
 #include "adf4355.h"
 #include "network.hpp"
+#include "libiio.h"
 
 #define SERVER_POLL_RATE 5 // Once per this many seconds
 #define SEC *1000000
@@ -31,8 +32,11 @@ enum XBAND_STATUS
 
 typedef struct
 {
-    rxmodem rx_modem[1];
-    adf4355 ADF[1];
+    // Three separate objects for a single x-band radio.
+    rxmodem rx_modem[1]; // from rxmodem.h
+    adf4355 ADF[1]; // from adf4355.h, aka pll
+    adradio_t radio[1];// from libiio.h
+
     network_data_t network_data[1];
     XBAND_STATUS rx_status; // 0 = not initd nor armed, 1 = initd but not armed, 2 = ready
     uint8_t netstat;
@@ -46,7 +50,7 @@ typedef struct
  *  XBAND_SET_TX
  *  XBAND_SET_RX
  * 
- * Also, what the GUI Client sends to Roof X-Band / Haystack for configurations.
+ * THIS IS NOT sent to Roof X-Band / Haystack for configurations.
  * 
  */
 typedef struct __attribute__((packed))
@@ -59,6 +63,26 @@ typedef struct __attribute__((packed))
     uint8_t ftr;
     short phase[16];
 } xband_set_data_t;
+
+/**
+ * @brief Sent to Roof X-Band / Haystack for configurations.
+ * 
+ */
+typedef struct
+{
+    // libiio.h: ensm_mode
+    int mode;               // SLEEP, FDD, TDD 
+    int pll_freq;           // PLL Frequency
+    uint64_t LO;            // LO freq
+    uint64_t samp;          // sampling rate
+    uint64_t bw;            // bandwidth
+    char ftr_name[64];      // filter name
+    int temp;               // temperature
+    double rssi;            // RSSI
+    double gain;            // TX Gain
+    char curr_gainmode[16]; // fast_attack or slow_attack
+    bool pll_lock;
+} phy_config_t;
 
 /**
  * @brief Listens for X-Band packets from SPACE-HAUC.
@@ -75,5 +99,12 @@ void *gs_xband_rx_thread(void *args);
  * @return void* 
  */
 void *gs_network_rx_thread(void *args);
+
+/**
+ * @brief 
+ * 
+ * @return int 
+ */
+int gs_xband_apply_config();
 
 #endif // GS_HAYSTACK_HPP
