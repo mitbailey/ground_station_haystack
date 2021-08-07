@@ -18,7 +18,6 @@
 
 int main(int argc, char **argv)
 {
-
     // Set up global data.
     global_data_t global_data[1] = {0};
     network_data_init(global_data->network_data, SERVER_PORT);
@@ -46,13 +45,6 @@ int main(int argc, char **argv)
                 usleep(5 SEC);
             }
         }
-        
-        // Initialize adf4355 object.
-        bool adf_ready = true;
-        int adf_retval[3] = {-1};
-        adf_retval[0] = adf4355_init(global_data->ADF);
-        adf_retval[1] = adf4355_pw_up(global_data->ADF);
-        adf_retval[2] = adf4355_set_rx(global_data->ADF);
 
         // Start the threads.
         pthread_create(&net_polling_tid, NULL, gs_polling_thread, global_data->network_data);
