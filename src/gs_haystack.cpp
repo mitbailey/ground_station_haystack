@@ -200,6 +200,7 @@ void *gs_network_rx_thread(void *args)
                         // TODO: Set rssi?
                         // TODO: Set hardware gain?
                         // TODO: Set curr_gainmode?
+                        adradio_set_rx_hardwaregainmode(global_data->radio, strcmp("fast_attack", config->curr_gainmode) ? SLOW_ATTACK : FAST_ATTACK);
                         // TODO: Set pll_lock?
                     }
                     else
