@@ -198,7 +198,7 @@ void *gs_network_rx_thread(void *args)
                         // TODO: Set filter?
                         // TODO: Set temp?
                         // TODO: Set rssi?
-                        adradio_set_tx_hardwaregain(global_data->radio, config->gain);
+                        // TODO: Set hardware gain?
                         // TODO: Set curr_gainmode?
                         // TODO: Set pll_lock?
                     }
