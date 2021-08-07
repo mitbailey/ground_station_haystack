@@ -11,7 +11,6 @@
 
 #include <pthread.h>
 #include <unistd.h>
-#include "txmodem.h"
 #include "rxmodem.h"
 #include "meb_debug.hpp"
 #include "gs_haystack.hpp"
