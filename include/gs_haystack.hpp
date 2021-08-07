@@ -23,13 +23,6 @@
 #define RECV_TIMEOUT 15
 #define SERVER_PORT 54230
 
-enum XBAND_STATUS
-{
-    XSTAT_NOT_READY = 0,
-    XSTAT_INITD,
-    XSTAT_ARMED
-};
-
 typedef struct
 {
     // Three separate objects for a single x-band radio.
@@ -38,7 +31,7 @@ typedef struct
     adradio_t radio[1];// from libiio.h
 
     network_data_t network_data[1];
-    XBAND_STATUS rx_status; // 0 = not initd nor armed, 1 = initd but not armed, 2 = ready
+    bool rx_ready;
     uint8_t netstat;
 } global_data_t;
 

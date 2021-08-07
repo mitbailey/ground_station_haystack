@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         pthread_join(net_rx_tid, &thread_return);
         pthread_join(xband_rx_tid, &thread_return);
 
-        // Loop will begin, restarting the threads.
+        // Loop will begin again, restarting the threads.
     }
 
     // Finished.
@@ -79,11 +79,12 @@ int main(int argc, char **argv)
     pthread_join(xband_rx_tid, &thread_return);
     thread_return == PTHREAD_CANCELED ? printf("Good xband_rx_tid join.\n") : printf("Bad xband_rx_tid join.\n");
 
-    // Disarm the modem.
+    // Shutdown the X-Band radio.
     rxmodem_stop(global_data->rx_modem);
-
-    // Destroy modems.
     rxmodem_destroy(global_data->rx_modem);
+    adf4355_pw_down(global_data->ADF);
+    adf4355_destroy(global_data->ADF);
+    adradio_destroy(global_data->radio);
 
     // Destroy other things.
     close(global_data->network_data->socket);

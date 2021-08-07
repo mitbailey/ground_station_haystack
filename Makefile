@@ -1,19 +1,20 @@
-CPP = g++
-C = gcc
+CXX = g++
+CC = gcc
 CPPOBJS = src/main.o src/gs_haystack.o network/network.o
-COBJS = modem/src/libuio.o modem/src/adidma.o modem/src/rxmodem.o modem/src/txmodem.o adf4355/adf4355.o spibus/spibus.o gpiodev/gpiodev.o
+COBJS = modem/src/libuio.o modem/src/libiio.o modem/src/adidma.o modem/src/rxmodem.o modem/src/txmodem.o adf4355/adf4355.o spibus/spibus.o gpiodev/gpiodev.o
 CXXFLAGS = -I ./ -I ./include/ -I ./modem/ -I ./modem/include/ -I ./network/ -I ./adf4355/ -I ./spibus/ -Wall -pthread
 TARGET = haystack.out
+LFLAGS = -lpthread -liio
 
 all: $(COBJS) $(CPPOBJS)
-	$(CPP) $(CXXFLAGS) $(COBJS) $(CPPOBJS) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(COBJS) $(CPPOBJS) -o $(TARGET) $(LFLAGS)
 	./$(TARGET)
 
 %.o: %.cpp
-	$(CPP) $(CXXFLAGS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 %.o: %.c
-	$(C) $(CXXFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 .PHONY: clean
 
@@ -25,3 +26,4 @@ clean:
 	$(RM) adf4355/*.o
 	$(RM) gpiodev/*.o
 	$(RM) spibus/*.o
+	$(RM) modem/src/*.o
