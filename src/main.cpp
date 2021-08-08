@@ -58,18 +58,6 @@ int main(int argc, char **argv)
         // Loop will begin again, restarting the threads.
     }
 
-    // Finished.
-    // void *thread_return;
-    // pthread_cancel(net_polling_tid);
-    // pthread_cancel(net_rx_tid);
-    // pthread_cancel(xband_rx_tid);
-    // pthread_join(net_polling_tid, &thread_return);
-    // thread_return == PTHREAD_CANCELED ? printf("Good net_polling_tid join.\n") : printf("Bad net_polling_tid join.\n");
-    // pthread_join(net_rx_tid, &thread_return);
-    // thread_return == PTHREAD_CANCELED ? printf("Good net_rx_tid join.\n") : printf("Bad net_rx_tid join.\n");
-    // pthread_join(xband_rx_tid, &thread_return);
-    // thread_return == PTHREAD_CANCELED ? printf("Good xband_rx_tid join.\n") : printf("Bad xband_rx_tid join.\n");
-
     // Shutdown the X-Band radio.
     rxmodem_stop(global_data->rx_modem);
     rxmodem_destroy(global_data->rx_modem);

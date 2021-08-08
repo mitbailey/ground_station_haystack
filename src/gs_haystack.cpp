@@ -15,14 +15,12 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <si446x.h>
 #include "gs_haystack.hpp"
 #include "meb_debug.hpp"
 
 void *gs_xband_rx_thread(void *args)
 {
     global_data_t *global_data = (global_data_t *)args;
-
 
     while (!global_data->rx_ready)
     {
@@ -207,6 +205,46 @@ void *gs_network_rx_thread(void *args)
                     {
                         dbprintlf(YELLOW_FG "Incorrectly received a configuration for Roof X-Band.");
                     }
+                    break;
+                }
+                case CS_TYPE_POLL_XBAND_CONFIG:
+                {
+                    dbprintlf(BLUE_FG "Received a request for configuration information!");
+
+                    phy_config_t config[1];
+                    memset(config, 0x0, sizeof(phy_config_t));
+                    adradio_get_rx_bw(global_data->radio, (long long *)&config->bw);
+                    adradio_get_rx_hardwaregain(global_data->radio, &config->gain);
+                    adradio_get_rx_hardwaregainmode(global_data->radio, config->curr_gainmode, sizeof(config->curr_gainmode));
+                    adradio_get_rx_lo(global_data->radio, (long long *)&config->LO);
+                    adradio_get_rssi(global_data->radio, &config->rssi);
+                    adradio_get_samp(global_data->radio, (long long *)&config->samp);
+                    adradio_get_temp(global_data->radio, (long long *)&config->temp);
+                    char buf[32];
+                    memset(buf, 0x0, 32);
+                    adradio_get_ensm_mode(global_data->radio, buf, sizeof(buf));
+                    if (strcmp(buf, "SLEEP") == 0)
+                    {
+                        config->mode = 0;
+                    }
+                    else if (strcmp(buf, "FDD") == 0)
+                    {
+                        config->mode = 1;
+                    }
+                    else if (strcmp(buf, "TDD") == 0)
+                    {
+                        config->mode = 2;
+                    }
+                    else
+                    {
+                        config->mode = -1;
+                    } 
+
+                    NetworkFrame *network_frame = new NetworkFrame(CS_TYPE_POLL_XBAND_CONFIG, sizeof(phy_config_t));
+                    network_frame->storePayload(CS_ENDPOINT_CLIENT, config, sizeof(phy_config_t));
+                    network_frame->sendFrame(network_data);
+                    delete network_frame;
+
                     break;
                 }
                 case CS_TYPE_DATA:
