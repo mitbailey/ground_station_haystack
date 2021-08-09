@@ -182,6 +182,15 @@ void *gs_network_rx_thread(void *args)
                     dbprintlf(BLUE_FG "Received an X-Band CONFIG frame!");
                     if (network_frame->getEndpoint() == CS_ENDPOINT_HAYSTACK)
                     {
+
+                        if (!global_data->rx_ready)
+                        {
+                            // TODO: Send a packet indicating this.
+                            dbprintlf(RED_FG "Cannot configure radio: radio not ready, does not exist, or failed to initialize.");
+                            break;
+                        }
+
+
                         // xband_set_data_t *config = (xband_set_data_t *)payload;
                         // adradio_set_tx_lo(global_data->tx_modem, config->LO);
                         phy_config_t *config = (phy_config_t *)payload;
@@ -210,6 +219,13 @@ void *gs_network_rx_thread(void *args)
                 case CS_TYPE_POLL_XBAND_CONFIG:
                 {
                     dbprintlf(BLUE_FG "Received a request for configuration information!");
+
+                    if (!global_data->rx_ready)
+                        {
+                            // TODO: Send a packet indicating this.
+                            dbprintlf(RED_FG "Cannot get radio config: radio not ready, does not exist, or failed to initialize.");
+                            break;
+                    }
 
                     phy_config_t config[1];
                     memset(config, 0x0, sizeof(phy_config_t));
@@ -245,6 +261,11 @@ void *gs_network_rx_thread(void *args)
                     network_frame->sendFrame(network_data);
                     delete network_frame;
 
+                    break;
+                }
+                case CS_TYPE_XBAND_COMMAND:
+                {
+                    dbprintlf(BLUE_FG "Received XBAND command.");
                     break;
                 }
                 case CS_TYPE_DATA:
