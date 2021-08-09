@@ -27,11 +27,15 @@ typedef struct
 {
     // Three separate objects for a single x-band radio.
     rxmodem rx_modem[1]; // from rxmodem.h
-    adf4355 ADF[1]; // from adf4355.h, aka pll
+    adf4355 PLL[1]; // from adf4355.h, aka pll
     adradio_t radio[1];// from libiio.h
 
+    bool rx_modem_ready;
+    bool rx_armed;
+    bool PLL_ready;
+    bool radio_ready;
+
     network_data_t network_data[1];
-    bool rx_ready;
     uint8_t netstat;
 } global_data_t;
 
@@ -76,6 +80,49 @@ typedef struct
     char curr_gainmode[16]; // fast_attack or slow_attack
     bool pll_lock;
 } phy_config_t;
+
+/**
+ * @brief Sent to GUI client for status updates.
+ * 
+ */
+typedef struct
+{
+    // libiio.h: ensm_mode
+    int mode;               // SLEEP, FDD, TDD 
+    int pll_freq;           // PLL Frequency
+    uint64_t LO;            // LO freq
+    uint64_t samp;          // sampling rate
+    uint64_t bw;            // bandwidth
+    char ftr_name[64];      // filter name
+    int temp;               // temperature
+    double rssi;            // RSSI
+    double gain;            // TX Gain
+    char curr_gainmode[16]; // fast_attack or slow_attack
+    bool is_haystack;
+    bool pll_lock;
+    bool modem_ready;
+    bool PLL_ready;
+    bool radio_ready;
+    bool rx_armed; // only applicable to haystack
+} phy_status_t;
+
+enum XBAND_COMMAND
+{
+    XBC_INIT_PLL = 0,
+    XBC_DISABLE_PLL = 1,
+    XBC_ARM_RX = 2,
+    XBC_DISARM_RX = 3,
+};
+
+/**
+ * @brief Initializes radio.
+ * 
+ * Called from X-Band RX thread if necessary.
+ * 
+ * @param global_data 
+ * @return int 
+ */
+int gs_xband_init(global_data_t *global_data);
 
 /**
  * @brief Listens for X-Band packets from SPACE-HAUC.

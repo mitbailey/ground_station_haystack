@@ -61,8 +61,8 @@ int main(int argc, char **argv)
     // Shutdown the X-Band radio.
     rxmodem_stop(global_data->rx_modem);
     rxmodem_destroy(global_data->rx_modem);
-    adf4355_pw_down(global_data->ADF);
-    adf4355_destroy(global_data->ADF);
+    adf4355_pw_down(global_data->PLL);
+    adf4355_destroy(global_data->PLL);
     adradio_destroy(global_data->radio);
 
     // Destroy other things.

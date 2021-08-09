@@ -18,57 +18,57 @@
 #include "gs_haystack.hpp"
 #include "meb_debug.hpp"
 
-void *gs_xband_rx_thread(void *args)
+int gs_xband_init(global_data_t *global_data)
 {
-    global_data_t *global_data = (global_data_t *)args;
-
-    while (!global_data->rx_ready)
+    if (!global_data->rx_modem_ready)
     {
-        // Init rxmodem
-        // Init adf4355
-        // Init adradio_t
-        usleep(1 SEC);
-
-        // TODO: Confirm these are the correct c-strings.
         // Initialize.
         if (rxmodem_init(global_data->rx_modem, uio_get_id("rx_ipcore"), uio_get_id("rx_dma")) < 0)
         {
             dbprintlf(RED_FG "RX modem initialization failure.");
-            continue;
+            return -1;
         }
-        
-        // Arm.
-        if (rxmodem_start(global_data->rx_modem) < 0)
-        {
-            dbprintlf(RED_FG "RX modem start failure.");
-            continue;
-        }
-        
-        // Initialize.
-        if (adf4355_init(global_data->ADF) < 0)
-        {
-            dbprintlf(RED_FG "ADF initialization failure.");
-            continue;
-        }
+        dbprintlf(GREEN_FG "RX modem initialized.");
+        global_data->rx_modem_ready;
+    }
 
-        // Power up for RX.
-        if (adf4355_set_rx(global_data->ADF) < 0)
-        {
-            dbprintlf(RED_FG "ADF RX power-up failure.");
-            continue;
-        }
-
-        // Initialize.
+    if (!global_data->radio_ready)
+    {
         if (adradio_init(global_data->radio) < 0)
         {
             dbprintlf(RED_FG "Radio initialization failure.");
+            return -3;
+        }
+        dbprintlf(GREEN_FG "Radio initialized.");
+        global_data->radio_ready = true;
+    }
+
+    dbprintlf(GREEN_FG "Automatic initialization complete.");
+    return 1;
+}
+
+void *gs_xband_rx_thread(void *args)
+{
+    global_data_t *global_data = (global_data_t *)args;
+
+    while (!global_data->rx_modem_ready || !global_data->radio_ready)
+    {
+        if (gs_xband_init(global_data) < 0)
+        {
+            dbprintlf(RED_FG "Receive thread aborting, radio cannot initialize.");
+            usleep(5 SEC);
             continue;
         }
 
-        global_data->rx_ready = true;
+        if (!global_data->PLL_ready)
+        {
+            dbprintlf(YELLOW_FG "Receive thread aborting, PLL not initialized by GUI client operator.");
+            usleep(5 SEC);
+            continue;
+        }
     }
 
-    while (global_data->network_data->thread_status > 0 && global_data->rx_ready)
+    while (global_data->network_data->thread_status > 0 && global_data->rx_modem_ready && global_data->radio_ready && global_data->PLL_ready)
     {
         ssize_t buffer_size = rxmodem_receive(global_data->rx_modem);
 
@@ -180,22 +180,19 @@ void *gs_network_rx_thread(void *args)
                 case CS_TYPE_CONFIG_XBAND:
                 {
                     dbprintlf(BLUE_FG "Received an X-Band CONFIG frame!");
+                    if (!global_data->radio_ready)
+                    {
+                        // TODO: Send a packet indicating this.
+                        dbprintlf(RED_FG "Cannot configure radio: radio not ready, does not exist, or failed to initialize.");
+                        break;
+                    }
                     if (network_frame->getEndpoint() == CS_ENDPOINT_HAYSTACK)
                     {
-
-                        if (!global_data->rx_ready)
-                        {
-                            // TODO: Send a packet indicating this.
-                            dbprintlf(RED_FG "Cannot configure radio: radio not ready, does not exist, or failed to initialize.");
-                            break;
-                        }
-
-
                         // xband_set_data_t *config = (xband_set_data_t *)payload;
                         // adradio_set_tx_lo(global_data->tx_modem, config->LO);
                         phy_config_t *config = (phy_config_t *)payload;
                         // TODO: Figure out how to configure the X-Band radio.
-                        
+
                         // RECONFIGURE XBAND
                         adradio_set_ensm_mode(global_data->radio, (ensm_mode)config->mode);
                         // TODO: set freq???
@@ -220,44 +217,50 @@ void *gs_network_rx_thread(void *args)
                 {
                     dbprintlf(BLUE_FG "Received a request for configuration information!");
 
-                    if (!global_data->rx_ready)
-                        {
-                            // TODO: Send a packet indicating this.
-                            dbprintlf(RED_FG "Cannot get radio config: radio not ready, does not exist, or failed to initialize.");
-                            break;
+                    if (!global_data->radio_ready)
+                    {
+                        // TODO: Send a packet indicating this.
+                        dbprintlf(RED_FG "Cannot get radio config: radio not ready, does not exist, or failed to initialize.");
+                        break;
                     }
-
-                    phy_config_t config[1];
-                    memset(config, 0x0, sizeof(phy_config_t));
-                    adradio_get_rx_bw(global_data->radio, (long long *)&config->bw);
-                    adradio_get_rx_hardwaregain(global_data->radio, &config->gain);
-                    adradio_get_rx_hardwaregainmode(global_data->radio, config->curr_gainmode, sizeof(config->curr_gainmode));
-                    adradio_get_rx_lo(global_data->radio, (long long *)&config->LO);
-                    adradio_get_rssi(global_data->radio, &config->rssi);
-                    adradio_get_samp(global_data->radio, (long long *)&config->samp);
-                    adradio_get_temp(global_data->radio, (long long *)&config->temp);
+                    
+                    phy_status_t status[1];
+                    memset(status, 0x0, sizeof(phy_config_t));
+                    adradio_get_rx_bw(global_data->radio, (long long *)&status->bw);
+                    adradio_get_rx_hardwaregain(global_data->radio, &status->gain);
+                    adradio_get_rx_hardwaregainmode(global_data->radio, status->curr_gainmode, sizeof(status->curr_gainmode));
+                    adradio_get_rx_lo(global_data->radio, (long long *)&status->LO);
+                    adradio_get_rssi(global_data->radio, &status->rssi);
+                    adradio_get_samp(global_data->radio, (long long *)&status->samp);
+                    adradio_get_temp(global_data->radio, (long long *)&status->temp);
                     char buf[32];
                     memset(buf, 0x0, 32);
                     adradio_get_ensm_mode(global_data->radio, buf, sizeof(buf));
                     if (strcmp(buf, "SLEEP") == 0)
                     {
-                        config->mode = 0;
+                        status->mode = 0;
                     }
                     else if (strcmp(buf, "FDD") == 0)
                     {
-                        config->mode = 1;
+                        status->mode = 1;
                     }
                     else if (strcmp(buf, "TDD") == 0)
                     {
-                        config->mode = 2;
+                        status->mode = 2;
                     }
                     else
                     {
-                        config->mode = -1;
-                    } 
+                        status->mode = -1;
+                    }
+                    // NOTE: If this field is not set to true, it will be assumed this status update is for Roof X-Band! Very important!
+                    status->is_haystack = true;
+                    status->modem_ready = global_data->rx_modem_ready;
+                    status->PLL_ready = global_data->PLL_ready;
+                    status->radio_ready = global_data->radio_ready;
+                    status->rx_armed = global_data->rx_armed;
 
                     NetworkFrame *network_frame = new NetworkFrame(CS_TYPE_POLL_XBAND_CONFIG, sizeof(phy_config_t));
-                    network_frame->storePayload(CS_ENDPOINT_CLIENT, config, sizeof(phy_config_t));
+                    network_frame->storePayload(CS_ENDPOINT_CLIENT, status, sizeof(phy_config_t));
                     network_frame->sendFrame(network_data);
                     delete network_frame;
 
@@ -266,6 +269,68 @@ void *gs_network_rx_thread(void *args)
                 case CS_TYPE_XBAND_COMMAND:
                 {
                     dbprintlf(BLUE_FG "Received XBAND command.");
+                    XBAND_COMMAND *command = (XBAND_COMMAND *)payload;
+
+                    switch(*command)
+                    {
+                    case XBC_INIT_PLL:
+                    {
+                        dbprintlf("Received PLL initialize command.");
+                        if (adf4355_init(global_data->PLL) < 0)
+                        {
+                            dbprintlf(RED_FG "PLL initialization failure.");
+                        }
+                        else if (adf4355_set_rx(global_data->PLL) < 0)
+                        {
+                            dbprintlf(RED_FG "PLL set RX failure.");
+                        }
+                        else
+                        {
+                            dbprintlf(GREEN_FG "PLL initialization success.");
+                            global_data->PLL_ready = true;
+                        }
+                        break;
+                    }
+                    case XBC_DISABLE_PLL:
+                    {
+                        dbprintlf("Received Disable PLL command.");
+                        if (adf4355_pw_down(global_data->PLL) < 0)
+                        {
+                            dbprintlf(RED_FG "PLL shutdown failure.");
+                        }
+                        else
+                        {
+                            dbprintlf(GREEN_FG "PLL shutdown success.");
+                        }
+                    }
+                    case XBC_ARM_RX:
+                    {
+                        dbprintlf("Received Arm RX command.");
+                        if (rxmodem_start(global_data->rx_modem) < 0)
+                        {
+                            dbprintlf(RED_FG "Failed to arm RX.");
+                        }
+                        else
+                        {
+                            dbprintlf("Armed RX.");
+                            global_data->rx_armed = true;
+                        }
+                    }
+                    case XBC_DISARM_RX:
+                    {
+                        dbprintlf("Received Disarm RX command.");
+                        if (rxmodem_stop(global_data->rx_modem) < 0)
+                        {
+                            dbprintlf(RED_FG "Failed to disarm RX.");
+                        }
+                        else
+                        {
+                            dbprintlf("Disarmed RX.");
+                            global_data->rx_armed = false;
+                        }
+                    }
+                    }
+
                     break;
                 }
                 case CS_TYPE_DATA:
