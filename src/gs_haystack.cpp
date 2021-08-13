@@ -319,6 +319,7 @@ void *gs_network_rx_thread(void *args)
                         {
                             dbprintlf(GREEN_FG "PLL shutdown success.");
                         }
+                        break;
                     }
                     case XBC_ARM_RX:
                     {
@@ -338,6 +339,7 @@ void *gs_network_rx_thread(void *args)
                             dbprintlf("Armed RX.");
                             global_data->rx_armed = true;
                         }
+                        break;
                     }
                     case XBC_DISARM_RX:
                     {
@@ -357,6 +359,7 @@ void *gs_network_rx_thread(void *args)
                             dbprintlf("Disarmed RX.");
                             global_data->rx_armed = false;
                         }
+                        break;
                     }
                     }
 
