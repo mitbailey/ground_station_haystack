@@ -200,17 +200,14 @@ void *gs_network_rx_thread(void *args)
 
                         // RECONFIGURE XBAND
                         adradio_set_ensm_mode(global_data->radio, (ensm_mode)config->mode);
-                        // TODO: set freq???
                         adradio_set_rx_lo(global_data->radio, config->LO);
                         adradio_set_samp(global_data->radio, config->samp);
-                        // TODO: Set bw (bandwidth)?
-                        // TODO: Set filter?
-                        // TODO: Set temp?
-                        // TODO: Set rssi?
-                        // TODO: Set hardware gain?
-                        // TODO: Set curr_gainmode?
+                        adradio_set_rx_bw(global_data->radio, config->bw);
+                        char filter_name[256];
+                        // TODO: Keep track of the return value of the load filter thing in the status.
+                        snprintf(filter_name, sizeof(filter_name), "/home/sunip/%s.ftr", config->ftr_name);
+                        adradio_set_tx_hardwaregain(global_data->radio, -85);
                         adradio_set_rx_hardwaregainmode(global_data->radio, strcmp("fast_attack", config->curr_gainmode) ? SLOW_ATTACK : FAST_ATTACK);
-                        // TODO: Set pll_lock?
                     }
                     else
                     {
