@@ -101,6 +101,7 @@ void *gs_network_rx_thread(void *args)
     network_data_t *network_data = global_data->network_data;
     global_data->PLL->spi_bus = 0;
     global_data->PLL->spi_cs = 1;
+    global_data->PLL->spi_cs_internal = 1;
     global_data->PLL->cs_gpio = -1;
     global_data->PLL->single = 1;
     global_data->PLL->muxval = 6;

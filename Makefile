@@ -8,7 +8,7 @@ LFLAGS = -lpthread -liio
 
 all: $(COBJS) $(CPPOBJS)
 	$(CXX) $(CXXFLAGS) $(COBJS) $(CPPOBJS) -o $(TARGET) $(LFLAGS)
-	./$(TARGET)
+	sudo ./$(TARGET)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
