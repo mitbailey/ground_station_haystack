@@ -4,7 +4,7 @@ CPPOBJS = src/main.o src/gs_haystack.o network/network.o
 COBJS = modem/src/libuio.o modem/src/libiio.o modem/src/adidma.o modem/src/rxmodem.o modem/src/txmodem.o adf4355/adf4355.o spibus/spibus.o gpiodev/gpiodev.o
 CXXFLAGS = -I ./ -I ./include/ -I ./modem/ -I ./modem/include/ -I ./network/ -I ./adf4355/ -I ./spibus/ -Wall -pthread
 TARGET = haystack.out
-LFLAGS = -lpthread -liio
+LFLAGS = -lpthread -liio -std=c++11
 
 all: $(COBJS) $(CPPOBJS)
 	$(CXX) $(CXXFLAGS) $(COBJS) $(CPPOBJS) -o $(TARGET) $(LFLAGS)
