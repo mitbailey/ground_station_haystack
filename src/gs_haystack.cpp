@@ -281,6 +281,12 @@ void *gs_network_rx_thread(void *args)
                     case XBC_INIT_PLL:
                     {
                         dbprintlf("Received PLL initialize command.");
+                        if (global_data->PLL_ready)
+                        {
+                            dbprintlf(YELLOW_FG "PLL already initialized, canceling.");
+                            break;
+                        }
+
                         if (adf4355_init(global_data->PLL) < 0)
                         {
                             dbprintlf(RED_FG "PLL initialization failure.");
@@ -299,6 +305,12 @@ void *gs_network_rx_thread(void *args)
                     case XBC_DISABLE_PLL:
                     {
                         dbprintlf("Received Disable PLL command.");
+                        if (!global_data->PLL_ready)
+                        {
+                            dbprintlf(YELLOW_FG "PLL already disabled, canceling.");
+                            break;
+                        }
+
                         if (adf4355_pw_down(global_data->PLL) < 0)
                         {
                             dbprintlf(RED_FG "PLL shutdown failure.");
@@ -311,6 +323,12 @@ void *gs_network_rx_thread(void *args)
                     case XBC_ARM_RX:
                     {
                         dbprintlf("Received Arm RX command.");
+                        if (global_data->rx_armed)
+                        {
+                            dbprintlf(YELLOW_FG "RX already armed, canceling.");
+                            break;
+                        }
+
                         if (rxmodem_start(global_data->rx_modem) < 0)
                         {
                             dbprintlf(RED_FG "Failed to arm RX.");
@@ -324,6 +342,12 @@ void *gs_network_rx_thread(void *args)
                     case XBC_DISARM_RX:
                     {
                         dbprintlf("Received Disarm RX command.");
+                        if (!global_data->rx_armed)
+                        {
+                            dbprintlf(YELLOW_FG "RX already disarmed, canceling.");
+                            break;
+                        }
+
                         if (rxmodem_stop(global_data->rx_modem) < 0)
                         {
                             dbprintlf(RED_FG "Failed to disarm RX.");
