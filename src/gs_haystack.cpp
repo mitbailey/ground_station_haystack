@@ -20,6 +20,12 @@
 
 int gs_xband_init(global_data_t *global_data)
 {
+    if (global_data->rx_modem_ready && global_data->radio_ready)
+    {
+        dbprintlf(YELLOW_FG "RX modem and radio marked as ready, but gs_xband_init(...) was called anyway. Canceling redundant initialization.");
+        return -1;
+    }
+
     if (!global_data->rx_modem_ready)
     {
         // Initialize.
@@ -29,7 +35,7 @@ int gs_xband_init(global_data_t *global_data)
             return -1;
         }
         dbprintlf(GREEN_FG "RX modem initialized.");
-        global_data->rx_modem_ready;
+        global_data->rx_modem_ready = true;
     }
 
     if (!global_data->radio_ready)
@@ -56,13 +62,6 @@ void *gs_xband_rx_thread(void *args)
         if (gs_xband_init(global_data) < 0)
         {
             dbprintlf(RED_FG "Receive thread aborting, radio cannot initialize.");
-            usleep(5 SEC);
-            continue;
-        }
-
-        if (!global_data->PLL_ready)
-        {
-            dbprintlf(YELLOW_FG "Receive thread aborting, PLL not initialized by GUI client operator.");
             usleep(5 SEC);
             continue;
         }
