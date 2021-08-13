@@ -79,6 +79,7 @@ typedef struct
     double gain;            // TX Gain
     char curr_gainmode[16]; // fast_attack or slow_attack
     bool pll_lock;
+    uint32_t MTU;
 } phy_config_t;
 
 /**
@@ -104,6 +105,7 @@ typedef struct
     bool PLL_ready;
     bool radio_ready;
     bool rx_armed; // only applicable to haystack
+    uint32_t MTU;
 } phy_status_t;
 
 enum XBAND_COMMAND
