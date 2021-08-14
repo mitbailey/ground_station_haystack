@@ -35,7 +35,7 @@ typedef struct
     bool PLL_ready;
     bool radio_ready;
 
-    network_data_t network_data[1];
+    NetDataClient *network_data;
     uint8_t netstat;
 } global_data_t;
 
@@ -100,7 +100,6 @@ typedef struct
     double gain;            // TX Gain
     char curr_gainmode[16]; // fast_attack or slow_attack
     bool pll_lock;
-    bool is_haystack;
     bool modem_ready;
     bool PLL_ready;
     bool radio_ready;
@@ -148,5 +147,12 @@ void *gs_network_rx_thread(void *args);
  * @return int 
  */
 int gs_xband_apply_config();
+
+/**
+ * @brief 
+ * 
+ * @return void* 
+ */
+void *xband_status_thread(void *);
 
 #endif // GS_HAYSTACK_HPP
