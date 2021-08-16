@@ -71,8 +71,7 @@ void *gs_xband_rx_thread(void *args)
     {
         if (!global->PLL_ready)
         {
-            dbprintlf(YELLOW_FG "PLL not initialized, waiting.");
-            usleep(5 SEC);
+            dbprintlf(YELLOW_FG "PLL not initialized.");
         }
 
         if (!global->rx_armed)
