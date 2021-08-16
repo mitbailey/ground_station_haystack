@@ -95,7 +95,7 @@ typedef struct
     int64_t samp;          // sampling rate
     int64_t bw;            // bandwidth
     char ftr_name[64];      // filter name
-    int temp;               // temperature
+    int64_t temp;               // temperature
     double rssi;            // RSSI
     double gain;            // TX Gain
     char curr_gainmode[16]; // fast_attack or slow_attack
