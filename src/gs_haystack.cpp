@@ -75,6 +75,13 @@ void *gs_xband_rx_thread(void *args)
             usleep(5 SEC);
         }
 
+        if (!global->rx_armed)
+        {
+            dbprintlf(YELLOW_FG "RX IS NOT ARMED: CANNOT RECEIVE OR READ UNTIL ARMED!");
+            usleep(5 SEC);
+            continue;
+        }
+
         ssize_t buffer_size = rxmodem_receive(global->rx_modem);
 
         if (buffer_size <= 0)
@@ -110,16 +117,16 @@ void *gs_xband_rx_thread(void *args)
 
 void *gs_network_rx_thread(void *args)
 {
-    global_data_t *global_data = (global_data_t *)args;
-    NetDataClient *network_data = global_data->network_data;
+    global_data_t *global = (global_data_t *)args;
+    NetDataClient *network_data = global->network_data;
 
     // PLL initialization data.
-    global_data->PLL->spi_bus = 0;
-    global_data->PLL->spi_cs = 1;
-    global_data->PLL->spi_cs_internal = 1;
-    global_data->PLL->cs_gpio = -1;
-    global_data->PLL->single = 1;
-    global_data->PLL->muxval = 6;
+    global->PLL->spi_bus = 0;
+    global->PLL->spi_cs = 1;
+    global->PLL->spi_cs_internal = 1;
+    global->PLL->cs_gpio = -1;
+    global->PLL->single = 1;
+    global->PLL->muxval = 6;
 
     // Haystack is a network client to the GS Server, and so should be very similar in socketry to ground_station.
 
@@ -162,7 +169,7 @@ void *gs_network_rx_thread(void *args)
                 }
                 dbprintlf("Integrity check successful.");
 
-                global_data->netstat = network_frame->getNetstat();
+                global->netstat = network_frame->getNetstat();
 
                 // For now, just print the Netstat.
                 uint8_t netstat = network_frame->getNetstat();
@@ -192,29 +199,37 @@ void *gs_network_rx_thread(void *args)
                 case NetType::XBAND_CONFIG:
                 {
                     dbprintlf(BLUE_FG "Received an X-Band CONFIG frame!");
-                    if (!global_data->radio_ready)
+                    if (!global->radio_ready)
                     {
                         // TODO: Send a packet indicating this.
                         dbprintlf(RED_FG "Cannot configure radio: radio not ready, does not exist, or failed to initialize.");
                         break;
                     }
+                    
                     if (network_frame->getDestination() == NetVertex::HAYSTACK)
                     {
                         // xband_set_data_t *config = (xband_set_data_t *)payload;
                         // adradio_set_tx_lo(global_data->tx_modem, config->LO);
                         phy_config_t *config = (phy_config_t *)payload;
+
+                        if (global->rx_armed && config->mode == SLEEP)
+                        {
+                            dbprintlf(RED_BG "ATTENTION: CONFIGURATION ABORTED! CANNOT PUT RADIO TO SLEEP WHILE RX IS ARMED!");
+                            break;
+                        }
+
                         // TODO: Figure out how to configure the X-Band radio.
 
                         // RECONFIGURE XBAND
-                        adradio_set_ensm_mode(global_data->radio, (ensm_mode)config->mode);
-                        adradio_set_rx_lo(global_data->radio, config->LO);
-                        adradio_set_samp(global_data->radio, config->samp);
-                        adradio_set_rx_bw(global_data->radio, config->bw);
+                        adradio_set_ensm_mode(global->radio, (ensm_mode)config->mode);
+                        adradio_set_rx_lo(global->radio, config->LO);
+                        adradio_set_samp(global->radio, config->samp);
+                        adradio_set_rx_bw(global->radio, config->bw);
                         char filter_name[256];
                         // TODO: Keep track of the return value of the load filter thing in the status.
                         snprintf(filter_name, sizeof(filter_name), "/home/sunip/%s.ftr", config->ftr_name);
-                        adradio_set_tx_hardwaregain(global_data->radio, -85);
-                        adradio_set_rx_hardwaregainmode(global_data->radio, strcmp("fast_attack", config->curr_gainmode) ? SLOW_ATTACK : FAST_ATTACK);
+                        adradio_set_tx_hardwaregain(global->radio, -85);
+                        adradio_set_rx_hardwaregainmode(global->radio, strcmp("fast_attack", config->curr_gainmode) ? SLOW_ATTACK : FAST_ATTACK);
                     }
                     else
                     {
@@ -232,37 +247,37 @@ void *gs_network_rx_thread(void *args)
                     case XBC_INIT_PLL:
                     {
                         dbprintlf("Received PLL initialize command.");
-                        if (global_data->PLL_ready)
+                        if (global->PLL_ready)
                         {
                             dbprintlf(YELLOW_FG "PLL already initialized, canceling.");
                             break;
                         }
 
-                        if (adf4355_init(global_data->PLL) < 0)
+                        if (adf4355_init(global->PLL) < 0)
                         {
                             dbprintlf(RED_FG "PLL initialization failure.");
                         }
-                        else if (adf4355_set_rx(global_data->PLL) < 0)
+                        else if (adf4355_set_rx(global->PLL) < 0)
                         {
                             dbprintlf(RED_FG "PLL set RX failure.");
                         }
                         else
                         {
                             dbprintlf(GREEN_FG "PLL initialization success.");
-                            global_data->PLL_ready = true;
+                            global->PLL_ready = true;
                         }
                         break;
                     }
                     case XBC_DISABLE_PLL:
                     {
                         dbprintlf("Received Disable PLL command.");
-                        if (!global_data->PLL_ready)
+                        if (!global->PLL_ready)
                         {
                             dbprintlf(YELLOW_FG "PLL already disabled, canceling.");
                             break;
                         }
 
-                        if (adf4355_pw_down(global_data->PLL) < 0)
+                        if (adf4355_pw_down(global->PLL) < 0)
                         {
                             dbprintlf(RED_FG "PLL shutdown failure.");
                         }
@@ -275,40 +290,40 @@ void *gs_network_rx_thread(void *args)
                     case XBC_ARM_RX:
                     {
                         dbprintlf("Received Arm RX command.");
-                        if (global_data->rx_armed)
+                        if (global->rx_armed)
                         {
                             dbprintlf(YELLOW_FG "RX already armed, canceling.");
                             break;
                         }
 
-                        if (rxmodem_start(global_data->rx_modem) < 0)
+                        if (rxmodem_start(global->rx_modem) < 0)
                         {
                             dbprintlf(RED_FG "Failed to arm RX.");
                         }
                         else
                         {
                             dbprintlf("Armed RX.");
-                            global_data->rx_armed = true;
+                            global->rx_armed = true;
                         }
                         break;
                     }
                     case XBC_DISARM_RX:
                     {
                         dbprintlf("Received Disarm RX command.");
-                        if (!global_data->rx_armed)
+                        if (!global->rx_armed)
                         {
                             dbprintlf(YELLOW_FG "RX already disarmed, canceling.");
                             break;
                         }
 
-                        if (rxmodem_stop(global_data->rx_modem) < 0)
+                        if (rxmodem_stop(global->rx_modem) < 0)
                         {
                             dbprintlf(RED_FG "Failed to disarm RX.");
                         }
                         else
                         {
                             dbprintlf("Disarmed RX.");
-                            global_data->rx_armed = false;
+                            global->rx_armed = false;
                         }
                         break;
                     }
@@ -358,9 +373,9 @@ void *gs_network_rx_thread(void *args)
     network_data->recv_active = false;
     dbprintlf(FATAL "DANGER! NETWORK RECEIVE THREAD IS RETURNING!");
 
-    if (global_data->network_data->thread_status > 0)
+    if (global->network_data->thread_status > 0)
     {
-        global_data->network_data->thread_status = 0;
+        global->network_data->thread_status = 0;
     }
     return NULL;
 }
