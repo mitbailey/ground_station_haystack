@@ -29,7 +29,6 @@ int main(int argc, char **argv)
     // Set up global data.
     global_data_t global[1] = {0};
     global->network_data = new NetDataClient(NetPort::HAYSTACK, SERVER_POLL_RATE);
-    global->network_data->recv_active = true;
 
     // Create Ground Station Network thread IDs.
     pthread_t net_polling_tid, net_rx_tid, xband_rx_tid, xband_status_tid;
@@ -40,6 +39,7 @@ int main(int argc, char **argv)
     {
         // 1 = All good, 0 = recoverable failure, -1 = fatal failure (close program)
         global->network_data->thread_status = 1;
+        global->network_data->recv_active = true;
 
         // Initialize and begin socket communication to the server.
         if (!global->network_data->connection_ready)

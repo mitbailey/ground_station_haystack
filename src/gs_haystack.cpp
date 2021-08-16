@@ -343,7 +343,7 @@ void *gs_network_rx_thread(void *args)
         erprintlf(errno);
     }
 
-    network_data->recv_active = false;
+    // network_data->recv_active = false;
     dbprintlf(FATAL "DANGER! NETWORK RECEIVE THREAD IS RETURNING!");
 
     if (global_data->network_data->thread_status > 0)
