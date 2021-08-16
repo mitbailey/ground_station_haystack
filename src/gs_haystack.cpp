@@ -69,6 +69,12 @@ void *gs_xband_rx_thread(void *args)
 
     while (global->network_data->thread_status > 0 && global->rx_modem_ready && global->radio_ready)
     {
+        if (!global->PLL_ready)
+        {
+            dbprintlf(YELLOW_FG "PLL not initialized, waiting.");
+            usleep(5 SEC);
+        }
+
         ssize_t buffer_size = rxmodem_receive(global->rx_modem);
 
         uint8_t *buffer = (uint8_t *)malloc(buffer_size * sizeof(char));
