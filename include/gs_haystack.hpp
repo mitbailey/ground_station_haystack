@@ -70,11 +70,11 @@ typedef struct
     // libiio.h: ensm_mode
     int mode;               // SLEEP, FDD, TDD 
     int pll_freq;           // PLL Frequency
-    uint64_t LO;            // LO freq
-    uint64_t samp;          // sampling rate
-    uint64_t bw;            // bandwidth
+    int64_t LO;            // LO freq
+    int64_t samp;          // sampling rate
+    int64_t bw;            // bandwidth
     char ftr_name[64];      // filter name
-    int temp;               // temperature
+    int64_t temp;               // temperature
     double rssi;            // RSSI
     double gain;            // TX Gain
     char curr_gainmode[16]; // fast_attack or slow_attack
@@ -91,9 +91,9 @@ typedef struct
     // libiio.h: ensm_mode
     int mode;               // SLEEP, FDD, TDD 
     int pll_freq;           // PLL Frequency
-    uint64_t LO;            // LO freq
-    uint64_t samp;          // sampling rate
-    uint64_t bw;            // bandwidth
+    int64_t LO;            // LO freq
+    int64_t samp;          // sampling rate
+    int64_t bw;            // bandwidth
     char ftr_name[64];      // filter name
     int temp;               // temperature
     double rssi;            // RSSI

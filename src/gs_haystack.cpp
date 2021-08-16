@@ -377,22 +377,14 @@ void *xband_status_thread(void *args)
         {
             phy_status_t status[1];
             memset(status, 0x0, sizeof(phy_status_t));
-            long long tmp = 0;
 
-            adradio_get_rx_bw(global->radio, &tmp);
-            status->bw = (uint64_t)tmp;
-
+            adradio_get_rx_bw(global->radio, (long long *)&status->bw);
             adradio_get_rx_hardwaregain(global->radio, &status->gain);
             adradio_get_rx_hardwaregainmode(global->radio, status->curr_gainmode, sizeof(status->curr_gainmode));
-            adradio_get_rx_lo(global->radio, &tmp);
-            status->LO = (uint64_t)tmp;
-
+            adradio_get_rx_lo(global->radio, (long long *)&status->LO);
             adradio_get_rssi(global->radio, &status->rssi);
-            adradio_get_samp(global->radio, &tmp);
-            status->samp = (uint64_t)tmp;
-
-            adradio_get_temp(global->radio, &tmp);
-            status->temp = (int)tmp;
+            adradio_get_samp(global->radio, (long long *)&status->samp);
+            adradio_get_temp(global->radio, (long long *)&status->temp);
 
             char buf[32];
             memset(buf, 0x0, 32);
@@ -422,9 +414,9 @@ void *xband_status_thread(void *args)
             dbprintlf(GREEN_FG "Sending the following X-Band status data:");
             dbprintlf(GREEN_FG "mode %d", status->mode);
             dbprintlf(GREEN_FG "pll_freq %d", status->pll_freq);
-            dbprintlf(GREEN_FG "LO %d", status->LO);
-            dbprintlf(GREEN_FG "samp %d", status->samp);
-            dbprintlf(GREEN_FG "bw %d", status->bw);
+            dbprintlf(GREEN_FG "LO %ld", status->LO);
+            dbprintlf(GREEN_FG "samp %ld", status->samp);
+            dbprintlf(GREEN_FG "bw %ld", status->bw);
             dbprintlf(GREEN_FG "ftr_name %s", status->ftr_name);
             dbprintlf(GREEN_FG "temp %d", status->temp);
             dbprintlf(GREEN_FG "rssi %f", status->rssi);
