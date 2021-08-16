@@ -57,7 +57,7 @@ void *gs_xband_rx_thread(void *args)
 {
     global_data_t *global = (global_data_t *)args;
 
-    while ((!global->rx_modem_ready || !global->radio_ready) && network_data->thread_status > 0)
+    while ((!global->rx_modem_ready || !global->radio_ready) && global->network_data->thread_status > 0)
     {
         if (gs_xband_init(global) < 0)
         {
