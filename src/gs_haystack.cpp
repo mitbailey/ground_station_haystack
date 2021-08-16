@@ -377,25 +377,35 @@ void *xband_status_thread(void *args)
         {
             phy_status_t status[1];
             memset(status, 0x0, sizeof(phy_status_t));
+            long long tmp = 0;
+
             adradio_get_rx_bw(global->radio, (long long *)&status->bw);
+            status->bw = (uint64_t)tmp;
+
             adradio_get_rx_hardwaregain(global->radio, &status->gain);
             adradio_get_rx_hardwaregainmode(global->radio, status->curr_gainmode, sizeof(status->curr_gainmode));
             adradio_get_rx_lo(global->radio, (long long *)&status->LO);
+            status->LO = (uint64_t)tmp;
+
             adradio_get_rssi(global->radio, &status->rssi);
             adradio_get_samp(global->radio, (long long *)&status->samp);
+            status->samp = (uint64_t)tmp;
+
             adradio_get_temp(global->radio, (long long *)&status->temp);
+            status->temp = (int)tmp;
+
             char buf[32];
             memset(buf, 0x0, 32);
             adradio_get_ensm_mode(global->radio, buf, sizeof(buf));
-            if (strcmp(buf, "SLEEP") == 0)
+            if (strcmp(buf, "sleep") == 0)
             {
                 status->mode = 0;
             }
-            else if (strcmp(buf, "FDD") == 0)
+            else if (strcmp(buf, "fdd") == 0)
             {
                 status->mode = 1;
             }
-            else if (strcmp(buf, "TDD") == 0)
+            else if (strcmp(buf, "tdd") == 0)
             {
                 status->mode = 2;
             }
@@ -408,6 +418,24 @@ void *xband_status_thread(void *args)
             status->PLL_ready = global->PLL_ready;
             status->radio_ready = global->radio_ready;
             status->rx_armed = global->rx_armed;
+
+            dbprintlf(GREEN_FG "Sending the following X-Band status data:");
+            dbprintlf(GREEN_FG "mode %d", status->mode);
+            dbprintlf(GREEN_FG "pll_freq %d", status->pll_freq);
+            dbprintlf(GREEN_FG "LO %d", status->LO);
+            dbprintlf(GREEN_FG "samp %d", status->samp);
+            dbprintlf(GREEN_FG "bw %d", status->bw);
+            dbprintlf(GREEN_FG "ftr_name %s", status->ftr_name);
+            dbprintlf(GREEN_FG "temp %d", status->temp);
+            dbprintlf(GREEN_FG "rssi %f", status->rssi);
+            dbprintlf(GREEN_FG "gain %f", status->gain);
+            dbprintlf(GREEN_FG "curr_gainmode %s", status->curr_gainmode);
+            dbprintlf(GREEN_FG "pll_lock %d", status->pll_lock);
+            dbprintlf(GREEN_FG "modem_ready %d", status->modem_ready);
+            dbprintlf(GREEN_FG "PLL_ready %d", status->PLL_ready);
+            dbprintlf(GREEN_FG "radio_ready %d", status->radio_ready);
+            dbprintlf(GREEN_FG "rx_armed %d", status->rx_armed);
+            dbprintlf(GREEN_FG "MTU %d", status->MTU);
 
             NetFrame *status_frame = new NetFrame((unsigned char *)status, sizeof(phy_status_t), NetType::XBAND_DATA, NetVertex::CLIENT);
             status_frame->sendFrame(network_data);
