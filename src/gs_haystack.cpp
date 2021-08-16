@@ -414,11 +414,11 @@ void *xband_status_thread(void *args)
             dbprintlf(GREEN_FG "Sending the following X-Band status data:");
             dbprintlf(GREEN_FG "mode %d", status->mode);
             dbprintlf(GREEN_FG "pll_freq %d", status->pll_freq);
-            dbprintlf(GREEN_FG "LO %ld", status->LO);
-            dbprintlf(GREEN_FG "samp %ld", status->samp);
-            dbprintlf(GREEN_FG "bw %ld", status->bw);
+            dbprintlf(GREEN_FG "LO %lld", status->LO);
+            dbprintlf(GREEN_FG "samp %lld", status->samp);
+            dbprintlf(GREEN_FG "bw %lld", status->bw);
             dbprintlf(GREEN_FG "ftr_name %s", status->ftr_name);
-            dbprintlf(GREEN_FG "temp %d", status->temp);
+            dbprintlf(GREEN_FG "temp %lld", status->temp);
             dbprintlf(GREEN_FG "rssi %f", status->rssi);
             dbprintlf(GREEN_FG "gain %f", status->gain);
             dbprintlf(GREEN_FG "curr_gainmode %s", status->curr_gainmode);
