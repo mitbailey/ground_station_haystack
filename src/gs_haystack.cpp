@@ -57,7 +57,7 @@ void *gs_xband_rx_thread(void *args)
 {
     global_data_t *global = (global_data_t *)args;
 
-    while (!global->rx_modem_ready || !global->radio_ready)
+    while ((!global->rx_modem_ready || !global->radio_ready) && network_data->thread_status > 0)
     {
         if (gs_xband_init(global) < 0)
         {
@@ -111,7 +111,7 @@ void *gs_network_rx_thread(void *args)
 
     // Haystack is a network client to the GS Server, and so should be very similar in socketry to ground_station.
 
-    while (network_data->recv_active)
+    while (network_data->recv_active && network_data->thread_status > 0)
     {
         if (!network_data->connection_ready)
         {
@@ -121,7 +121,7 @@ void *gs_network_rx_thread(void *args)
 
         int read_size = 0;
 
-        while (read_size >= 0 && network_data->recv_active)
+        while (read_size >= 0 && network_data->recv_active && network_data->thread_status > 0)
         {
             char buffer[sizeof(NetFrame) * 2];
             memset(buffer, 0x0, sizeof(buffer));
@@ -363,6 +363,7 @@ void *xband_status_thread(void *args)
         if (!global->radio_ready)
         {
             dbprintlf(RED_FG "Cannot send radio config: radio not ready, does not exist, or failed to initialize.");
+            usleep(2 SEC);
             continue;
         }
 
@@ -410,7 +411,7 @@ void *xband_status_thread(void *args)
         usleep(network_data->polling_rate SEC);
     }
 
-    dbprintlf(FATAL "XBAND_STATUS_THREAD IS EXITING!");
+    dbprintlf(FATAL "XBAND_STATUS_THREAD IS EXITING (%d)!", network_data->thread_status);
     if (network_data->thread_status > 0)
     {
         network_data->thread_status = 0;
