@@ -77,6 +77,12 @@ void *gs_xband_rx_thread(void *args)
 
         ssize_t buffer_size = rxmodem_receive(global->rx_modem);
 
+        if (buffer_size <= 0)
+        {
+            dbprintlf(YELLOW_FG "Bad receive, ignoring (could be WiFi).");
+            continue;
+        }
+
         uint8_t *buffer = (uint8_t *)malloc(buffer_size * sizeof(char));
         memset(buffer, 0x0, buffer_size);
 
