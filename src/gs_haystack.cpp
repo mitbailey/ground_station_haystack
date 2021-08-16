@@ -67,7 +67,7 @@ void *gs_xband_rx_thread(void *args)
         }
     }
 
-    while (global->network_data->thread_status > 0 && global->rx_modem_ready && global->radio_ready && global->PLL_ready)
+    while (global->network_data->thread_status > 0 && global->rx_modem_ready && global->radio_ready)
     {
         ssize_t buffer_size = rxmodem_receive(global->rx_modem);
 
@@ -343,7 +343,7 @@ void *gs_network_rx_thread(void *args)
         erprintlf(errno);
     }
 
-    // network_data->recv_active = false;
+    network_data->recv_active = false;
     dbprintlf(FATAL "DANGER! NETWORK RECEIVE THREAD IS RETURNING!");
 
     if (global_data->network_data->thread_status > 0)
