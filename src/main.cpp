@@ -66,6 +66,9 @@ int main(int argc, char **argv)
         pthread_join(xband_rx_tid, &thread_return);
         pthread_join(xband_status_tid, &thread_return);
 
+        dbprintlf(RED_BG "thread_status: %d, recv_active: %d", global->network_data->thread_status, global->network_data->recv_active);
+
+        usleep(5 SEC);
         // Loop will begin again, restarting the threads.
     }
 
