@@ -85,6 +85,9 @@ void *gs_xband_rx_thread(void *args)
         ssize_t buffer_size = rxmodem_receive(global->rx_modem);
         dbprintlf("Done receive.");
 
+        // Store the rxmodem_receive return for our next status send.
+        global->last_rx_status = buffer_size;
+
         if (buffer_size <= 0)
         {
             dbprintlf(YELLOW_FG "Bad receive, receive returned %d, ignoring (could be WiFi).", buffer_size);
@@ -96,6 +99,10 @@ void *gs_xband_rx_thread(void *args)
 
         ssize_t read_size = 0;
         read_size = rxmodem_read(global->rx_modem, buffer, buffer_size);
+
+        // Store the rx_modem_read return for our next status send.
+        global->last_read_status = read_size;
+
         if (read_size != buffer_size)
         {
             dbprintlf(RED_FG "Read %d of %d bytes.", read_size, buffer_size);
@@ -439,6 +446,8 @@ void *xband_status_thread(void *args)
             status->PLL_ready = global->PLL_ready;
             status->radio_ready = global->radio_ready;
             status->rx_armed = global->rx_armed;
+            status->last_rx_status = global->last_rx_status;
+            status->last_read_status = global->last_read_status;
 
             dbprintlf(GREEN_FG "Sending the following X-Band status data:");
             dbprintlf(GREEN_FG "mode %d", status->mode);
@@ -456,6 +465,7 @@ void *xband_status_thread(void *args)
             dbprintlf(GREEN_FG "PLL_ready %d", status->PLL_ready);
             dbprintlf(GREEN_FG "radio_ready %d", status->radio_ready);
             dbprintlf(GREEN_FG "rx_armed %d", status->rx_armed);
+            dbprintlf(GREEN_FG "last_rx_status %d", status->last_rx_status);
             dbprintlf(GREEN_FG "MTU %d", status->MTU);
 
             NetFrame *status_frame = new NetFrame((unsigned char *)status, sizeof(phy_status_t), NetType::XBAND_DATA, NetVertex::CLIENT);

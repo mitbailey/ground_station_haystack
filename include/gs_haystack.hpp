@@ -34,6 +34,8 @@ typedef struct
     bool rx_armed;
     bool PLL_ready;
     bool radio_ready;
+    int last_rx_status;
+    int last_read_status;
 
     NetDataClient *network_data;
     uint8_t netstat;
@@ -104,6 +106,8 @@ typedef struct
     bool PLL_ready;
     bool radio_ready;
     bool rx_armed; // only applicable to haystack
+    int last_rx_status;
+    int last_read_status;
     uint32_t MTU;
 } phy_status_t;
 
