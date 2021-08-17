@@ -81,11 +81,13 @@ void *gs_xband_rx_thread(void *args)
             continue;
         }
 
+        dbprintlf(GREEN_FG "W A I T I N G   T O   R E C E I V E . . .");
         ssize_t buffer_size = rxmodem_receive(global->rx_modem);
+        dbprintlf("Done receive.");
 
         if (buffer_size <= 0)
         {
-            dbprintlf(YELLOW_FG "Bad receive, ignoring (could be WiFi).");
+            dbprintlf(YELLOW_FG "Bad receive, receive returned %d, ignoring (could be WiFi).", buffer_size);
             continue;
         }
 
