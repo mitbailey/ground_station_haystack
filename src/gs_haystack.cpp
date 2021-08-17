@@ -102,6 +102,13 @@ void *gs_xband_rx_thread(void *args)
             continue;
         }
 
+        dbprintlf(GREEN_FG "Read in the following buffer and will send it to the Network's GUI Client.");
+        for (int i = 0; i < buffer_size; i++)
+        {
+            printf("%02x", buffer[i]);
+        }
+        printf("(END)\n");
+
         NetFrame *network_frame = new NetFrame((unsigned char *)buffer, buffer_size * sizeof(char), NetType::DATA, NetVertex::CLIENT);
         network_frame->sendFrame(global->network_data);
         delete network_frame;
