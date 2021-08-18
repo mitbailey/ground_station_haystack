@@ -338,6 +338,9 @@ void *gs_network_rx_thread(void *args)
             {
                 break;
             }
+
+            delete netframe;
+
         }
         if (read_size == -404)
         {
