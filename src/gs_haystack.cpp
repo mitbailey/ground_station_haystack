@@ -440,8 +440,7 @@ void *xband_status_thread(void *args)
             dbprintlf(GREEN_FG "MTU %d", status->MTU);
 
             NetFrame *status_frame = new NetFrame((unsigned char *)status, sizeof(phy_status_t), NetType::XBAND_DATA, NetVertex::CLIENT);
-            ssize_t send_size = status_frame->sendFrame(network_data);
-            dbprintlf(BLUE_FG "Sent %d bytes of frame, %d.", send_size, status_frame->getFrameSize());
+            status_frame->sendFrame(network_data);
             delete status_frame;
         }
 
