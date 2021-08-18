@@ -63,54 +63,6 @@ typedef struct __attribute__((packed))
     short phase[16];
 } xband_set_data_t;
 
-/**
- * @brief Sent to Roof X-Band / Haystack for configurations.
- * 
- */
-typedef struct
-{
-    // libiio.h: ensm_mode
-    int mode;               // SLEEP, FDD, TDD 
-    int pll_freq;           // PLL Frequency
-    int64_t LO;            // LO freq
-    int64_t samp;          // sampling rate
-    int64_t bw;            // bandwidth
-    char ftr_name[64];      // filter name
-    int64_t temp;               // temperature
-    double rssi;            // RSSI
-    double gain;            // TX Gain
-    char curr_gainmode[16]; // fast_attack or slow_attack
-    bool pll_lock;
-    uint32_t MTU;
-} phy_config_t;
-
-/**
- * @brief Sent to GUI client for status updates.
- * 
- */
-typedef struct
-{
-    // libiio.h: ensm_mode
-    int mode;               // SLEEP, FDD, TDD 
-    int pll_freq;           // PLL Frequency
-    int64_t LO;            // LO freq
-    int64_t samp;          // sampling rate
-    int64_t bw;            // bandwidth
-    char ftr_name[64];      // filter name
-    int64_t temp;               // temperature
-    double rssi;            // RSSI
-    double gain;            // TX Gain
-    char curr_gainmode[16]; // fast_attack or slow_attack
-    bool pll_lock;
-    bool modem_ready;
-    bool PLL_ready;
-    bool radio_ready;
-    bool rx_armed; // only applicable to haystack
-    uint32_t MTU;
-    int32_t last_rx_status;
-    int32_t last_read_status;
-} phy_status_t;
-
 enum XBAND_COMMAND
 {
     XBC_INIT_PLL = 0,
