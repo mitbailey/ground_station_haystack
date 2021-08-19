@@ -60,7 +60,7 @@ void *gs_xband_rx_thread(void *args)
 
     while ((!global->rx_modem_ready || !global->radio_ready) && global->network_data->thread_status > 0)
     {
-        if (gs_xband_init(global) < 0)
+        // if (gs_xband_init(global) < 0)
         {
             dbprintlf(RED_FG "Receive thread aborting, radio cannot initialize.");
             usleep(5 SEC);
@@ -342,7 +342,7 @@ void *gs_network_rx_thread(void *args)
                         {
                             dbprintlf(RED_FG "Failed to disable RX.");
                         }
-                        
+
                         pthread_cancel(*(global->rx_modem->thr));
                         pthread_cancel(xband_rx_tid);
                         usleep(100000);
@@ -412,6 +412,16 @@ void *xband_status_thread(void *args)
 {
     global_data_t *global = (global_data_t *)args;
     NetDataClient *network_data = global->network_data;
+
+    while ((!global->rx_modem_ready || !global->radio_ready) && global->network_data->thread_status > 0)
+    {
+        if (gs_xband_init(global) < 0)
+        {
+            dbprintlf(RED_FG "Receive thread aborting, radio cannot initialize.");
+            usleep(5 SEC);
+            continue;
+        }
+    }
 
     while (network_data->recv_active && network_data->thread_status > 0)
     {
