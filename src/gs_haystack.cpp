@@ -110,10 +110,17 @@ void *gs_xband_rx_thread(void *args)
             continue;
         }
 
+        // dbprintlf(GREEN_FG "Read in the following buffer and will send it to the Network's GUI Client.");
+        // for (int i = 0; i < buffer_size; i++)
+        // {
+        //     printf("%02x", buffer[i]);
+        // }
+        // printf("(END)\n");
+
         dbprintlf(GREEN_FG "Read in the following buffer and will send it to the Network's GUI Client.");
         for (int i = 0; i < buffer_size; i++)
         {
-            printf("%02x", buffer[i]);
+            printf("%c", buffer[i]);
         }
         printf("(END)\n");
 
@@ -409,7 +416,7 @@ void *xband_status_thread(void *args)
             }
             else if (strcmp(buf, "tdd") == 0)
             {
-                status->mode = 2;
+                status->mode = 2;&
             }
             else
             {
