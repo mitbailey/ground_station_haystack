@@ -27,3 +27,4 @@ clean:
 	$(RM) gpiodev/*.o
 	$(RM) spibus/*.o
 	$(RM) modem/src/*.o
+	$(RM) rxdata*.bin

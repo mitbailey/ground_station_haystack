@@ -124,7 +124,10 @@ void *gs_xband_rx_thread(void *args)
         }
         printf("(END)\n");
 
-        FILE *fp = fopen("rxdata.txt", "wb");
+        static int receive_fp_index = 0;
+        static char filename[256] = {0};
+        snprintf(filename, sizeof(filename), "rxdata%d.bin", receive_fp_index++);
+        FILE *fp = fopen(filename, "wb");
         if (fp != NULL)
         {
             fwrite(buffer, 1, buffer_size, fp);
