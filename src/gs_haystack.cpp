@@ -416,7 +416,7 @@ void *xband_status_thread(void *args)
             }
             else if (strcmp(buf, "tdd") == 0)
             {
-                status->mode = 2;&
+                status->mode = 2;
             }
             else
             {
