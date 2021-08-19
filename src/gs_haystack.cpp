@@ -124,6 +124,18 @@ void *gs_xband_rx_thread(void *args)
         }
         printf("(END)\n");
 
+        FILE *fp = fopen("rxdata.txt", "wb");
+        if (fp != NULL)
+        {
+            fwrite(buffer, 1, buffer_size, fp);
+            fclose(fp);
+        }
+        else
+        {
+            dbprintlf(RED_FG "Failed to open file to log buffer.");
+        }
+        
+
         NetFrame *network_frame = new NetFrame((unsigned char *)buffer, buffer_size * sizeof(char), NetType::DATA, NetVertex::CLIENT);
         network_frame->sendFrame(global->network_data);
         delete network_frame;
