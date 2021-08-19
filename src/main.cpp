@@ -57,13 +57,13 @@ int main(int argc, char **argv)
         // Start the threads.
         pthread_create(&net_polling_tid, NULL, gs_polling_thread, global->network_data);
         pthread_create(&net_rx_tid, NULL, gs_network_rx_thread, global);
-        pthread_create(&xband_rx_tid, NULL, gs_xband_rx_thread, global);
+        // pthread_create(&xband_rx_tid, NULL, gs_xband_rx_thread, global);
         pthread_create(&xband_status_tid, NULL, xband_status_thread, global);
 
         void *thread_return;
         pthread_join(net_polling_tid, &thread_return);
         pthread_join(net_rx_tid, &thread_return);
-        pthread_join(xband_rx_tid, &thread_return);
+        // pthread_join(xband_rx_tid, &thread_return);
         pthread_join(xband_status_tid, &thread_return);
 
         dbprintlf(RED_BG "thread_status: %d, recv_active: %d", global->network_data->thread_status, global->network_data->recv_active);

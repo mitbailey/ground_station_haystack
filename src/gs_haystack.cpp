@@ -250,6 +250,8 @@ void *gs_network_rx_thread(void *args)
                     dbprintlf(BLUE_FG "Received XBAND command.");
                     XBAND_COMMAND *command = (XBAND_COMMAND *)payload;
 
+                    static pthread_t xband_rx_tid;
+
                     switch (*command)
                     {
                     case XBC_INIT_PLL:
@@ -303,16 +305,28 @@ void *gs_network_rx_thread(void *args)
                             dbprintlf(YELLOW_FG "RX already armed, canceling.");
                             break;
                         }
-
-                        if (rxmodem_start(global->rx_modem) < 0)
-                        {
-                            dbprintlf(RED_FG "Failed to arm RX.");
-                        }
                         else
                         {
-                            dbprintlf("Armed RX.");
-                            global->rx_armed = true;
+                            if (!pthread_create(&xband_rx_tid, NULL, gs_xband_rx_thread, global))
+                            {
+                                dbprintlf("Armed RX.");
+                                global->rx_armed = true;
+                            }
+                            else
+                            {
+                                dbprintlf(RED_FG "Failed to arm RX.");
+                            }
                         }
+
+                        // if (rxmodem_start(global->rx_modem) < 0)
+                        // {
+                        //     dbprintlf(RED_FG "Failed to arm RX.");
+                        // }
+                        // else
+                        // {
+                        //     dbprintlf("Armed RX.");
+                        //     global->rx_armed = true;
+                        // }
                         break;
                     }
                     case XBC_DISARM_RX:
@@ -326,13 +340,16 @@ void *gs_network_rx_thread(void *args)
 
                         if (rxmodem_stop(global->rx_modem) < 0)
                         {
-                            dbprintlf(RED_FG "Failed to disarm RX.");
+                            dbprintlf(RED_FG "Failed to disable RX.");
                         }
-                        else
-                        {
-                            dbprintlf("Disarmed RX.");
-                            global->rx_armed = false;
-                        }
+                        
+                        pthread_cancel(*(global->rx_modem->thr));
+                        pthread_cancel(xband_rx_tid);
+                        usleep(100000);
+
+                        dbprintlf("Disarmed RX.");
+                        global->rx_armed = false;
+
                         break;
                     }
                     }
