@@ -70,6 +70,8 @@ void *gs_xband_rx_thread(void *args)
 
     while (global->network_data->thread_status > 0 && global->rx_modem_ready && global->radio_ready)
     {
+        static bool last_receive_successful = false;
+
         if (!global->PLL_ready)
         {
             dbprintlf(YELLOW_FG "PLL not initialized.");
@@ -87,7 +89,18 @@ void *gs_xband_rx_thread(void *args)
         dbprintlf("Done receive.");
 
         // Store the rxmodem_receive return for our next status send.
-        global->last_rx_status = buffer_size;
+        if (!last_receive_successful)
+        {
+            global->last_rx_status = buffer_size;
+        }
+
+        last_receive_successful = false;
+        
+        if (buffer_size > 0)
+        {
+            global->last_rx_status = buffer_size;
+            last_receive_successful = true;
+        }
 
         if (buffer_size <= 0)
         {
@@ -137,7 +150,6 @@ void *gs_xband_rx_thread(void *args)
         {
             dbprintlf(RED_FG "Failed to open file to log buffer.");
         }
-        
 
         NetFrame *network_frame = new NetFrame((unsigned char *)buffer, buffer_size * sizeof(char), NetType::DATA, NetVertex::CLIENT);
         network_frame->sendFrame(global->network_data);
@@ -213,7 +225,7 @@ void *gs_network_rx_thread(void *args)
                         dbprintlf(RED_FG "Cannot configure radio: radio not ready, does not exist, or failed to initialize.");
                         break;
                     }
-                    
+
                     if (netframe->getDestination() == NetVertex::HAYSTACK)
                     {
                         // xband_set_data_t *config = (xband_set_data_t *)payload;
@@ -379,7 +391,6 @@ void *gs_network_rx_thread(void *args)
             }
 
             delete netframe;
-
         }
         if (read_size == -404)
         {
